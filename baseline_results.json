@@ -1,0 +1,35 @@
+{
+  "task1_easy": {
+    "score": 0.4988,
+    "passed": false,
+    "steps_used": 8,
+    "arms_race": {
+      "bugs_caught": 1,
+      "bugs_missed": 3,
+      "correct_fixes": 0,
+      "hallucinations": 0
+    }
+  },
+  "task2_medium": {
+    "score": 0.5365,
+    "passed": false,
+    "steps_used": 16,
+    "arms_race": {
+      "bugs_caught": 3,
+      "bugs_missed": 5,
+      "correct_fixes": 0,
+      "hallucinations": 0
+    }
+  },
+  "task3_hard": {
+    "score": 0.6289,
+    "passed": true,
+    "steps_used": 30,
+    "arms_race": {
+      "bugs_caught": 10,
+      "bugs_missed": 5,
+      "correct_fixes": 0,
+      "hallucinations": 0
+    }
+  }
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "bug_id": "OFF_BY_ONE",
+    "name": "Off-by-One Error",
+    "description": "Loop or array index is off by one, causing missed or extra iteration",
+    "example_buggy": "for i in range(len(arr)-1):",
+    "example_fixed": "for i in range(len(arr)):",
+    "severity": "medium",
+    "detection_hint": "Check loop bounds carefully. Look for len()-1 or len()+1 patterns"
+  },
+  {
+    "bug_id": "WRONG_OPERATOR",
+    "name": "Wrong Operator",
+    "description": "Assignment used instead of comparison, or wrong arithmetic operator",
+    "example_buggy": "if x = 10:",
+    "example_fixed": "if x == 10:",
+    "severity": "medium",
+    "detection_hint": "Check all conditional statements for = vs == confusion"
+  },
+  {
+    "bug_id": "NULL_POINTER",
+    "name": "Missing None Check",
+    "description": "Code accesses attribute or method of potentially None object",
+    "example_buggy": "def get_name(user): return user.name",
+    "example_fixed": "def get_name(user): return user.name if user else None",
+    "severity": "high",
+    "detection_hint": "Check if None check exists before accessing object attributes"
+  },
+  {
+    "bug_id": "INTEGER_OVERFLOW",
+    "name": "Integer Division Error",
+    "description": "Integer division used where float division is needed",
+    "example_buggy": "average = total / count",
+    "example_fixed": "average = total / float(count)",
+    "severity": "medium",
+    "detection_hint": "Check division operations for integer vs float type mismatch"
+  },
+  {
+    "bug_id": "SQL_INJECTION",
+    "name": "SQL Injection Vulnerability",
+    "description": "User input directly concatenated into SQL query without sanitization",
+    "example_buggy": "query = 'SELECT * FROM users WHERE id = ' + user_id",
+    "example_fixed": "query = 'SELECT * FROM users WHERE id = %s', (user_id,)",
+    "severity": "critical",
+    "detection_hint": "Look for string concatenation in SQL queries with user input"
+  },
+  {
+    "bug_id": "PATH_TRAVERSAL",
+    "name": "Path Traversal Vulnerability",
+    "description": "User-controlled input used in file path without validation",
+    "example_buggy": "open('/uploads/' + filename)",
+    "example_fixed": "open(os.path.join('/uploads', os.path.basename(filename)))",
+    "severity": "critical",
+    "detection_hint": "Check file operations that use user-supplied filenames"
+  },
+  {
+    "bug_id": "RACE_CONDITION",
+    "name": "Race Condition",
+    "description": "Shared resource accessed without proper locking in concurrent code",
+    "example_buggy": "counter += 1",
+    "example_fixed": "with lock: counter += 1",
+    "severity": "high",
+    "detection_hint": "Look for shared variable modifications in threaded code without locks"
+  },
+  {
+    "bug_id": "MUTABLE_DEFAULT",
+    "name": "Mutable Default Argument",
+    "description": "Mutable object used as default function argument, shared across calls",
+    "example_buggy": "def add_item(item, items=[]): items.append(item)",
+    "example_fixed": "def add_item(item, items=None): items = items or []",
+    "severity": "medium",
+    "detection_hint": "Check function signatures for mutable defaults like [], {}, set()"
+  },
+  {
+    "bug_id": "WRONG_COMPARISON",
+    "name": "Wrong Comparison Type",
+    "description": "Using == to compare with None/True/False instead of is/is not",
+    "example_buggy": "if result == None:",
+    "example_fixed": "if result is None:",
+    "severity": "low",
+    "detection_hint": "Check comparisons with None, True, False — use is/is not"
+  },
+  {
+    "bug_id": "INSECURE_RANDOM",
+    "name": "Insecure Random Number Generation",
+    "description": "Using random module for security-sensitive operations",
+    "example_buggy": "token = random.randint(0, 999999)",
+    "example_fixed": "token = secrets.randbelow(1000000)",
+    "severity": "high",
+    "detection_hint": "Check if random module is used for tokens, passwords, or security keys"
+  }
+]
