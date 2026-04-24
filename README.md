@@ -1,26 +1,28 @@
 \---
 
-tags:
+title: CodeReviewArena
 
-&#x20; - openenv
+emoji: 🔍
 
-&#x20; - multi-agent
+colorFrom: red
 
-&#x20; - adversarial
-
-&#x20; - code-review
+colorTo: blue
 
 sdk: docker
+
+pinned: false
 
 \---
 
 
 
-\# CodeReviewArena
+\# CodeReviewArena: Adversarial Multi-Agent Code Review
 
 
 
-Adversarial Multi-Agent Code Review RL Environment.
+An OpenEnv reinforcement learning environment where AI agents train
+
+through adversarial self-play.
 
 
 
@@ -31,4 +33,6 @@ Adversarial Multi-Agent Code Review RL Environment.
 \- task2\_medium: 0.5365
 
 \- task3\_hard: 0.6289
+
+\- overall\_mean: 0.5547
 
