@@ -15,7 +15,7 @@ pinned: false
 - **HF Space:** https://huggingface.co/spaces/mkdavboyzz/code_review_arena
 - **GitHub:** https://github.com/mkstudioslearncbse-art/code-review-arena
 - **API Docs:** https://mkdavboyzz-code-review-arena.hf.space/docs
-- **Training Notebook:** https://colab.research.google.com/drive/YOUR_COLAB_ID
+- **Training Notebook:** https://colab.research.google.com/drive/1CV_ml50YkwGpUFhvC4sa_HRw67mmXPb
 
 ## 🎯 Problem
 Every day developers push buggy code to production. Human reviewers miss subtle bugs under time pressure. Security vulnerabilities slip through. No RL training environment existed for adversarial code review.
@@ -38,6 +38,7 @@ Every day developers push buggy code to production. Human reviewers miss subtle 
 ## 📊 Training Results
 
 ![Reward Curve](assets/reward_curve.png)
+![Loss Curve](assets/loss_curve.png)
 
 Trained using GRPO with Unsloth on Qwen2.5-1.5B-Instruct.
 
