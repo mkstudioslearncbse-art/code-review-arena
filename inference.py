@@ -25,7 +25,7 @@ API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME   = os.getenv("MODEL_NAME",   "gpt-4o-mini")
 HF_TOKEN     = os.getenv("HF_TOKEN")
 
-ENV_URL = "https://YOUR-SPACE.hf.space"  # update after deploy
+ENV_URL = "https://mkdavboyzz-code-review-arena.hf.space"  # update after deploy
 
 client = OpenAI(
     api_key=HF_TOKEN or "dummy",
