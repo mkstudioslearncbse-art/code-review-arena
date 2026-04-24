@@ -1,0 +1,37 @@
+[project]
+name = "code-review-arena"
+version = "0.1.0"
+description = "Adversarial Multi-Agent Code Review RL Environment"
+requires-python = ">=3.11"
+
+dependencies = [
+    "openenv-core",
+    "fastapi",
+    "uvicorn",
+    "pydantic>=2.0",
+    "sentence-transformers>=2.7.0",
+    "faiss-cpu>=1.7.4",
+    "numpy>=1.24",
+    "openai>=1.0.0",
+    "requests>=2.31.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.hatch.build]
+include = [
+    "*.py",
+    "corpus/**",
+    "rag/**",
+    "server/**",
+    "tasks/**",
+    "tests/**",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
