@@ -1,0 +1,129 @@
+spec_version: 1
+name: code_review_arena
+type: space
+runtime: fastapi
+app: server.app:app
+port: 7860
+
+display_name: "CodeReviewArena: Adversarial Multi-Agent Code Review"
+version: "1.0.0"
+description: >
+  An adversarial OpenEnv environment where AI agents train through
+  self-improving arms race. A CodeReviewer agent detects bugs and
+  proposes fixes while learning to avoid hallucinated CVE references.
+  Features RAG-grounded bug pattern retrieval, hallucination-aware
+  rewards, and self-escalating difficulty across 3 tasks.
+
+author: "T N Monish Karthikeyan"
+license: MIT
+tags:
+  - openenv
+  - multi-agent
+  - adversarial
+  - code-review
+  - self-improvement
+  - hallucination-detection
+  - reinforcement-learning
+
+tasks:
+  - id: task1_easy
+    display_name: "Easy — Obvious Bugs (4 snippets)"
+    difficulty: easy
+    pass_threshold: 0.50
+    max_steps: 20
+    snippet_count: 4
+    baseline_score: 0.0
+
+  - id: task2_medium
+    display_name: "Medium — Logic Bugs (8 snippets)"
+    difficulty: medium
+    pass_threshold: 0.55
+    max_steps: 30
+    snippet_count: 8
+    baseline_score: 0.0
+
+  - id: task3_hard
+    display_name: "Hard — Security Bugs (15 snippets)"
+    difficulty: hard
+    pass_threshold: 0.60
+    max_steps: 50
+    snippet_count: 15
+    baseline_score: 0.0
+
+action_space:
+  type: object
+  fields:
+    action_type:
+      type: enum
+      values:
+        - retrieve
+        - identify_bug
+        - propose_fix
+        - mark_clean
+        - escalate
+        - request_clarification
+    snippet_id:
+      type: string
+    bug_type:
+      type: string
+      nullable: true
+    bug_line:
+      type: integer
+      nullable: true
+    proposed_fix:
+      type: string
+      nullable: true
+    cve_reference:
+      type: string
+      nullable: true
+      description: "Hallucination trap field — fake CVEs get -0.8 penalty"
+
+observation_space:
+  type: object
+  fields:
+    queue:
+      type: array
+    current_snippet:
+      type: object
+      nullable: true
+    rag_context:
+      type: array
+      description: "Bug patterns retrieved after RETRIEVE action"
+    step_number:
+      type: integer
+    snippets_remaining:
+      type: integer
+    retrieved_this_step:
+      type: boolean
+    arms_race_stats:
+      type: object
+      description: "Self-improvement tracking stats"
+    cumulative_reward:
+      type: float
+
+reward:
+  type: float
+  range: [-1.0, 1.0]
+  components:
+    detection_accuracy:
+      weight: 0.40
+    fix_correctness:
+      weight: 0.30
+    retrieval_discipline:
+      weight: 0.15
+    efficiency:
+      weight: 0.15
+  penalties:
+    hallucination_fake_cve:
+      value: -0.8
+  retrieve_reward:
+    value: +0.05
+
+baseline:
+  agent: HeuristicAgent
+  seed: 42
+  scores:
+    task1_easy: 0.4988
+    task2_medium: 0.5365
+    task3_hard: 0.6289
+    overall_mean: 0.5547
