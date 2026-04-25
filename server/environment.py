@@ -11,7 +11,7 @@ from models import (
     ReviewerAction, CodeReviewObservation,
     AgentRole, CodeSnippet, BugPattern, RewardBreakdown
 )
-from corpus.snippets import get_snippets_for_task, get_ground_truth
+from corpus.snippets import get_snippets_for_task
 from rag.retriever import retriever
 from server.reward import compute_reviewer_reward
 
@@ -25,10 +25,7 @@ class CodeReviewEnvironment:
 
     def __init__(self, task_id: str = "task1_easy", seed: int = 42):
         if task_id not in self.TASK_CONFIG:
-            raise ValueError(
-                f"Unknown task_id='{task_id}'. "
-                f"Choose from: {list(self.TASK_CONFIG.keys())}"
-            )
+            raise ValueError(f"Unknown task_id='{task_id}'.")
         self._task_id            = task_id
         self._seed               = seed
         self._max_steps          = self.TASK_CONFIG[task_id]["max_steps"]
@@ -40,12 +37,21 @@ class CodeReviewEnvironment:
         self._rag_context:       List[BugPattern] = []
         self._retrieved_this_snippet: bool = False
         self._history:           List[Dict] = []
-        self._difficulty:        int   = 1
-        self._arms_race_stats:   Dict  = {
-            "bugs_caught":    0,
-            "bugs_missed":    0,
-            "correct_fixes":  0,
-            "hallucinations": 0,
+
+        # ── Self-improving arms race ───────────────────────────────────────
+        self._difficulty_multiplier:  float = 1.0
+        self._consecutive_successes:  int   = 0
+        self._consecutive_failures:   int   = 0
+        self._difficulty_history:     List[float] = []
+
+        # ── Arms race stats ────────────────────────────────────────────────
+        self._arms_race_stats: Dict = {
+            "bugs_caught":          0,
+            "bugs_missed":          0,
+            "correct_fixes":        0,
+            "hallucinations":       0,
+            "difficulty_level":     1.0,
+            "execution_verified":   0,
         }
 
     def reset(self) -> CodeReviewObservation:
@@ -61,6 +67,32 @@ class CodeReviewEnvironment:
         self._history                = []
         return self._build_observation()
 
+    def _update_difficulty(self, reward: float):
+        """Self-improving arms race — escalate difficulty based on performance."""
+        if reward > 0.7:
+            self._consecutive_successes += 1
+            self._consecutive_failures   = 0
+            if self._consecutive_successes >= 3:
+                self._difficulty_multiplier = min(
+                    2.0, self._difficulty_multiplier + 0.15
+                )
+                self._consecutive_successes = 0
+                self._arms_race_stats["difficulty_level"] = round(
+                    self._difficulty_multiplier, 2
+                )
+        elif reward < 0.2:
+            self._consecutive_failures  += 1
+            self._consecutive_successes  = 0
+            if self._consecutive_failures >= 3:
+                self._difficulty_multiplier = max(
+                    0.5, self._difficulty_multiplier - 0.1
+                )
+                self._consecutive_failures = 0
+                self._arms_race_stats["difficulty_level"] = round(
+                    self._difficulty_multiplier, 2
+                )
+        self._difficulty_history.append(self._difficulty_multiplier)
+
     def step(
         self, action: ReviewerAction
     ) -> Tuple[CodeReviewObservation, float, bool, Dict[str, Any]]:
@@ -70,7 +102,7 @@ class CodeReviewEnvironment:
         self._step_number += 1
         current = self._current_snippet()
 
-        # RETRIEVE action
+        # ── RETRIEVE ──────────────────────────────────────────────────────
         if action.action_type == "retrieve":
             if current:
                 query = f"{current.title} {current.buggy_code}"
@@ -86,11 +118,11 @@ class CodeReviewEnvironment:
             obs = self._build_observation(
                 last_action="retrieve",
                 last_reward=0.05,
-                info_message=f"Retrieved {len(self._rag_context)} bug patterns.",
+                info_message=f"Retrieved {len(self._rag_context)} patterns.",
             )
             return obs, 0.05, False, self._build_info(reward_obj)
 
-        # All other actions
+        # ── Compute reward ────────────────────────────────────────────────
         reward_obj = compute_reviewer_reward(
             action=action,
             rag_context=self._rag_context,
@@ -98,10 +130,18 @@ class CodeReviewEnvironment:
             step_number=self._step_number,
             max_steps=self._max_steps,
         )
-        reward = reward_obj.total
+
+        # Apply difficulty multiplier
+        base_reward = reward_obj.total
+        reward      = round(
+            max(-1.0, min(1.0, base_reward * self._difficulty_multiplier)), 4
+        )
         self._cumulative_reward += reward
 
-        # Update arms race stats
+        # Update arms race
+        self._update_difficulty(reward)
+
+        # Update stats
         if action.action_type in ("identify_bug", "propose_fix", "escalate"):
             if reward_obj.detection_accuracy >= 1.0:
                 self._arms_race_stats["bugs_caught"] += 1
@@ -112,21 +152,22 @@ class CodeReviewEnvironment:
             if reward_obj.hallucination_penalty < 0:
                 self._arms_race_stats["hallucinations"] += 1
 
-        # Mark snippet as reviewed
+        # Mark reviewed
         if current:
             current.is_reviewed = True
 
         # Record history
         self._history.append({
-            "step":        self._step_number,
-            "snippet_id":  action.snippet_id,
-            "action":      action.action_type,
-            "bug_type":    action.bug_type.value if action.bug_type else None,
-            "reward":      reward,
-            "explanation": reward_obj.explanation,
+            "step":               self._step_number,
+            "snippet_id":         action.snippet_id,
+            "action":             action.action_type,
+            "bug_type":           action.bug_type.value if action.bug_type else None,
+            "reward":             reward,
+            "difficulty":         self._difficulty_multiplier,
+            "explanation":        reward_obj.explanation,
         })
 
-        # Advance to next snippet
+        # Advance
         self._advance()
         self._rag_context            = []
         self._retrieved_this_snippet = False
@@ -146,15 +187,16 @@ class CodeReviewEnvironment:
     @property
     def state(self) -> Dict[str, Any]:
         return {
-            "task_id":            self._task_id,
-            "step_number":        self._step_number,
-            "max_steps":          self._max_steps,
-            "done":               self._done,
-            "cumulative_reward":  self._cumulative_reward,
-            "snippets_remaining": sum(1 for s in self._queue if not s.is_reviewed),
-            "arms_race_stats":    self._arms_race_stats,
-            "difficulty_level":   self._difficulty,
-            "history":            self._history,
+            "task_id":              self._task_id,
+            "step_number":          self._step_number,
+            "max_steps":            self._max_steps,
+            "done":                 self._done,
+            "cumulative_reward":    self._cumulative_reward,
+            "snippets_remaining":   sum(1 for s in self._queue if not s.is_reviewed),
+            "arms_race_stats":      self._arms_race_stats,
+            "difficulty_multiplier": self._difficulty_multiplier,
+            "difficulty_history":   self._difficulty_history,
+            "history":              self._history,
         }
 
     def _current_snippet(self) -> Optional[CodeSnippet]:
@@ -190,34 +232,32 @@ class CodeReviewEnvironment:
             cumulative_reward=self._cumulative_reward,
             retrieved_this_step=self._retrieved_this_snippet,
             current_agent_role=AgentRole.CODE_REVIEWER,
-            difficulty_level=self._difficulty,
+            difficulty_level=int(self._difficulty_multiplier * 10),
             arms_race_stats=self._arms_race_stats,
             info_message=info_message,
         )
 
     def _build_info(self, reward_obj: RewardBreakdown) -> Dict[str, Any]:
         return {
-            "reward_breakdown":  reward_obj.model_dump(),
-            "task_id":           self._task_id,
-            "step_number":       self._step_number,
-            "cumulative_reward": self._cumulative_reward,
-            "arms_race_stats":   self._arms_race_stats,
-            "history":           self._history,
+            "reward_breakdown":      reward_obj.model_dump(),
+            "task_id":               self._task_id,
+            "step_number":           self._step_number,
+            "cumulative_reward":     self._cumulative_reward,
+            "arms_race_stats":       self._arms_race_stats,
+            "difficulty_multiplier": self._difficulty_multiplier,
+            "history":               self._history,
         }
 
     def render(self) -> str:
         lines = [
             f"=== CodeReviewArena | task={self._task_id} "
-            f"| step={self._step_number}/{self._max_steps} ===",
+            f"| step={self._step_number}/{self._max_steps} "
+            f"| difficulty={self._difficulty_multiplier:.2f} ===",
             f"Cumulative reward: {self._cumulative_reward:.4f}",
             f"Arms race: {self._arms_race_stats}",
-            f"Queue ({len(self._queue)} snippets):",
         ]
         for i, s in enumerate(self._queue):
             marker = "→" if i == self._current_idx else " "
             done   = "✓" if s.is_reviewed else "•"
-            lines.append(
-                f"  {marker} [{done}] [{s.severity}] "
-                f"{s.id}: {s.title}"
-            )
+            lines.append(f"  {marker} [{done}] [{s.severity}] {s.id}: {s.title}")
         return "\n".join(lines)
