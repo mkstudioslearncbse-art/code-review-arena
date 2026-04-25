@@ -6,13 +6,14 @@ app: server.app:app
 port: 7860
 
 display_name: "CodeReviewArena: Adversarial Multi-Agent Code Review"
-version: "1.0.0"
+version: "2.0.0"
 description: >
   An adversarial OpenEnv environment where AI agents train through
   self-improving arms race. A CodeReviewer agent detects bugs and
   proposes fixes while learning to avoid hallucinated CVE references.
   Features RAG-grounded bug pattern retrieval, hallucination-aware
-  rewards, and self-escalating difficulty across 3 tasks.
+  rewards, sandbox execution verification, adaptive difficulty,
+  and long-horizon multi-bug file analysis.
 
 author: "T N Monish Karthikeyan"
 license: MIT
@@ -24,30 +25,57 @@ tags:
   - self-improvement
   - hallucination-detection
   - reinforcement-learning
+  - long-horizon
+  - security
 
 tasks:
   - id: task1_easy
     display_name: "Easy — Obvious Bugs (4 snippets)"
+    description: >
+      4 Python snippets with obvious bugs including off-by-one errors
+      and wrong operators. Clear scheme matches, no hallucination traps.
     difficulty: easy
     pass_threshold: 0.50
     max_steps: 20
     snippet_count: 4
-    baseline_score: 0.0
+    baseline_score: 0.5300
 
   - id: task2_medium
     display_name: "Medium — Logic Bugs (8 snippets)"
+    description: >
+      8 snippets with logic bugs including mutable defaults, integer
+      overflow, and wrong comparisons. Mixed difficulty.
     difficulty: medium
     pass_threshold: 0.55
     max_steps: 30
     snippet_count: 8
-    baseline_score: 0.0
+    baseline_score: 0.5795
 
   - id: task3_hard
     display_name: "Hard — Security Bugs (15 snippets)"
+    description: >
+      15 snippets with security bugs including SQL injection, path
+      traversal, race conditions, and 2 hallucination traps with
+      fake CVE references.
     difficulty: hard
     pass_threshold: 0.60
     max_steps: 50
     snippet_count: 15
+    baseline_score: 0.7617
+
+  - id: task4_longhor
+    display_name: "Long-Horizon — Multi-Bug Files (3 files)"
+    description: >
+      3 multi-function Python files each containing 4 connected bugs.
+      Agent must perform sequential analysis across entire files,
+      tracking state across 10-20 steps before receiving reward.
+      Requires long-horizon planning and recovery from early mistakes.
+      Covers Theme 2: Long-Horizon Planning and Instruction Following.
+    difficulty: long-horizon
+    pass_threshold: 0.55
+    max_steps: 100
+    snippet_count: 3
+    bugs_per_file: 4
     baseline_score: 0.0
 
 action_space:
@@ -98,6 +126,9 @@ observation_space:
     arms_race_stats:
       type: object
       description: "Self-improvement tracking stats"
+    difficulty_multiplier:
+      type: float
+      description: "Adaptive difficulty level (1.0 to 2.0)"
     cumulative_reward:
       type: float
 
@@ -106,24 +137,57 @@ reward:
   range: [-1.0, 1.0]
   components:
     detection_accuracy:
-      weight: 0.40
+      weight: 0.35
+      description: "Correct bug type identified"
+    localization_accuracy:
+      weight: 0.20
+      description: "Correct line number found"
     fix_correctness:
-      weight: 0.30
+      weight: 0.25
+      description: "Proposed fix is correct"
     retrieval_discipline:
-      weight: 0.15
+      weight: 0.10
+      description: "Retrieved before identifying"
     efficiency:
-      weight: 0.15
+      weight: 0.10
+      description: "Step budget utilisation"
+  bonuses:
+    sandbox_execution:
+      value: +0.20
+      description: "Fix actually runs in subprocess sandbox"
   penalties:
     hallucination_fake_cve:
       value: -0.8
+      description: "Agent cited non-existent CVE identifier"
+    mark_clean_on_buggy:
+      value: -0.3
+      description: "Agent declared buggy code as clean"
   retrieve_reward:
     value: +0.05
+    description: "Small positive reward for issuing RETRIEVE action"
+
+knowledge_base:
+  bug_patterns_count: 10
+  embedding_model: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+  retrieval: "Hybrid FAISS semantic search + keyword boost"
+  patterns:
+    - OFF_BY_ONE
+    - WRONG_OPERATOR
+    - NULL_POINTER
+    - INTEGER_OVERFLOW
+    - SQL_INJECTION
+    - PATH_TRAVERSAL
+    - RACE_CONDITION
+    - MUTABLE_DEFAULT
+    - WRONG_COMPARISON
+    - INSECURE_RANDOM
 
 baseline:
   agent: HeuristicAgent
   seed: 42
   scores:
-    task1_easy: 0.4988
-    task2_medium: 0.5365
-    task3_hard: 0.6289
-    overall_mean: 0.5547
+    task1_easy:    0.5300
+    task2_medium:  0.5795
+    task3_hard:    0.7617
+    task4_longhor: 0.0
+    overall_mean:  0.6237

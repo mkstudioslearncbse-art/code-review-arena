@@ -21,6 +21,7 @@ class CodeReviewEnvironment:
         "task1_easy":   {"max_steps": 20,  "snippet_count": 4},
         "task2_medium": {"max_steps": 30,  "snippet_count": 8},
         "task3_hard":   {"max_steps": 50,  "snippet_count": 15},
+        "task4_longhor": {"max_steps": 100, "snippet_count": 3},
     }
 
     def __init__(self, task_id: str = "task1_easy", seed: int = 42):

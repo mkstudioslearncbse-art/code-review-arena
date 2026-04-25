@@ -37,5 +37,18 @@
       "difficulty_level": 1.45,
       "execution_verified": 0
     }
+  },
+  "task4_longhor": {
+    "score": 0.6821,
+    "passed": true,
+    "steps_used": 6,
+    "arms_race": {
+      "bugs_caught": 2,
+      "bugs_missed": 1,
+      "correct_fixes": 0,
+      "hallucinations": 0,
+      "difficulty_level": 1.0,
+      "execution_verified": 0
+    }
   }
 }
