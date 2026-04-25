@@ -94,9 +94,8 @@ Bug patterns covered: OFF_BY_ONE, WRONG_OPERATOR, NULL_POINTER, INTEGER_OVERFLOW
 
 Trained using GRPO with Unsloth on Qwen2.5-1.5B-Instruct.
 
-![Reward Curve](assets/reward_curve.png)
-
-![Loss Curve](assets/loss_curve.png)
+![Reward Curve](https://raw.githubusercontent.com/mkstudioslearncbse-art/code-review-arena/main/assets/reward_curve.png)
+![Loss Curve](https://raw.githubusercontent.com/mkstudioslearncbse-art/code-review-arena/main/assets/loss_curve.png)
 
 ---
 
