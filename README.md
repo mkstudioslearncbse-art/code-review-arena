@@ -79,7 +79,7 @@ reward = 0.35 x detection_accuracy
 | task1_easy | 4 | Off-by-one, wrong operator | Easy | 0.50 |
 | task2_medium | 8 | Logic bugs, mutable defaults | Medium | 0.55 |
 | task3_hard | 15 | Security bugs, hallucination traps | Hard | 0.60 |
-
+| task4_longhor | 3 | Multi-function files, 4 connected bugs each | Long-Horizon | 0.55 |
 ---
 
 ## 🧠 Knowledge Base
@@ -106,8 +106,8 @@ Trained using GRPO with Unsloth on Qwen2.5-1.5B-Instruct.
 | task1_easy | 0.5300 | ✅ |
 | task2_medium | 0.5795 | ✅ |
 | task3_hard | 0.7617 | ✅ |
-| Overall Mean | 0.6237 | ✅ |
-
+| task4_longhor | 0.6821 | ✅ |
+| Overall Mean | 0.6383 | ✅ |
 ---
 
 ## 🚀 Quick Start
@@ -125,6 +125,8 @@ curl -X POST https://mkdavboyzz-code-review-arena.hf.space/step -H "Content-Type
 ## 🎯 Hackathon Themes
 
 Theme 1 — Multi-Agent Interactions: Adversarial arms race between injector difficulty and reviewer capability.
+
+Theme 2 — Long-Horizon Planning: task4_longhor requires agents to analyze multi-function files with 4 connected bugs across 10-20 steps with sparse delayed rewards.
 
 Theme 4 — Self-Improvement: Adaptive difficulty multiplier escalates as agent improves through self-play.
 
