@@ -1,35 +1,41 @@
 {
   "task1_easy": {
-    "score": 0.4988,
-    "passed": false,
+    "score": 0.53,
+    "passed": true,
     "steps_used": 8,
     "arms_race": {
       "bugs_caught": 1,
       "bugs_missed": 3,
       "correct_fixes": 0,
-      "hallucinations": 0
+      "hallucinations": 0,
+      "difficulty_level": 1.0,
+      "execution_verified": 0
     }
   },
   "task2_medium": {
-    "score": 0.5365,
-    "passed": false,
+    "score": 0.5795,
+    "passed": true,
     "steps_used": 16,
     "arms_race": {
       "bugs_caught": 3,
       "bugs_missed": 5,
       "correct_fixes": 0,
-      "hallucinations": 0
+      "hallucinations": 0,
+      "difficulty_level": 1.15,
+      "execution_verified": 0
     }
   },
   "task3_hard": {
-    "score": 0.6289,
+    "score": 0.7617,
     "passed": true,
     "steps_used": 30,
     "arms_race": {
       "bugs_caught": 10,
       "bugs_missed": 5,
       "correct_fixes": 0,
-      "hallucinations": 0
+      "hallucinations": 0,
+      "difficulty_level": 1.45,
+      "execution_verified": 0
     }
   }
 }
