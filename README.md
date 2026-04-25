@@ -128,6 +128,8 @@ Theme 1 — Multi-Agent Interactions: Adversarial arms race between injector dif
 
 Theme 2 — Long-Horizon Planning: task4_longhor requires agents to analyze multi-function files with 4 connected bugs across 10-20 steps with sparse delayed rewards.
 
+Theme 3.1 — World Modeling Professional Tasks: Agent interacts with real tools — FAISS knowledge base via RAG, sandbox subprocess for fix execution, and adaptive difficulty system. Cannot exploit shortcuts as reward is verified programmatically through actual code execution.
+
 Theme 4 — Self-Improvement: Adaptive difficulty multiplier escalates as agent improves through self-play.
 
 Theme 5 — Wild Card: Novel adversarial code intelligence domain with no prior OpenEnv environment.
