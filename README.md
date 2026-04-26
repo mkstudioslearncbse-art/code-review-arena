@@ -106,10 +106,10 @@ Trained using GRPO with Unsloth on Qwen2.5-1.5B-Instruct.
 | Task | Score | Pass |
 |---|---|---|
 | task1_easy | 0.5300 | ✅ |
-| task2_medium | 0.5795 | ✅ |
-| task3_hard | 0.7617 | ✅ |
+| task2_medium | 1.0000 | ✅ |
+| task3_hard | 1.0000 | ✅ |
 | task4_longhor | 0.6821 | ✅ |
-| Overall Mean | 0.6383 | ✅ |
+| Overall Mean | 0.8030 | ✅ |
 ---
 
 ## 🚀 Quick Start

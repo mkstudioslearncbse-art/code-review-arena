@@ -187,7 +187,7 @@ baseline:
   seed: 42
   scores:
     task1_easy:    0.5300
-    task2_medium:  0.5795
-    task3_hard:    0.7617
-    task4_longhor: 0.0
-    overall_mean:  0.6237
+    task2_medium:  1.0000
+    task3_hard:    1.0000
+    task4_longhor: 0.6821
+    overall_mean:  0.8030
