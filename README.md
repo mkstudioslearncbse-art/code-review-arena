@@ -18,6 +18,7 @@ pinned: false
 - **GitHub:** https://github.com/mkstudioslearncbse-art/code-review-arena
 - **API Docs:** https://mkdavboyzz-code-review-arena.hf.space/docs
 - **Training Notebook:** https://colab.research.google.com/drive/1CV_ml50YkwGpUFhvC4sa_HRw67mmXPbD
+- **Blog Post:** https://huggingface.co/spaces/mkdavboyzz/code_review_arena/blob/main/Blog.md
 
 ---
 
